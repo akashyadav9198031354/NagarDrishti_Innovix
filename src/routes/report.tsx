@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Mic, MicOff } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { LazyMap } from "@/components/LazyMap";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { classifyIssue } from "@/lib/classify.functions";
 import { fileToDataUrl, reportsQuery, uploadPhoto } from "@/lib/reports";
@@ -27,6 +29,26 @@ export const Route = createFileRoute("/report")({
 
 type AI = { category: string; confidence: number; severity: number; summary: string };
 
+type SpeechRecognitionAlternative = { transcript: string };
+type SpeechRecognitionResult = { isFinal: boolean; [index: number]: SpeechRecognitionAlternative };
+type SpeechRecognitionEvent = { resultIndex: number; results: ArrayLike<SpeechRecognitionResult> };
+type SpeechRecognitionErrorEvent = { error: string };
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+type WindowWithSpeechRecognition = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
 function ReportPage() {
   const search = Route.useSearch();
   const qc = useQueryClient();
@@ -44,8 +66,16 @@ function ReportPage() {
   const [picked, setPicked] = useState<[number, number] | null>(null);
   const [ai, setAi] = useState<AI | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceMessage, setVoiceMessage] = useState<"repVoiceUnsupported" | "repVoicePermission" | "repVoiceNoSpeech" | "repVoiceError" | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ ref: string; related: number } | null>(null);
+  const speechRecognition = useRef<SpeechRecognitionLike | null>(null);
+
+  useEffect(() => () => {
+    speechRecognition.current?.stop();
+    speechRecognition.current = null;
+  }, []);
 
   const related = picked && category ? findRelated(reports, picked[0], picked[1], category) : [];
 
@@ -70,6 +100,70 @@ function ReportPage() {
       toast.error(t("errAi"));
     } finally {
       setAnalyzing(false);
+    }
+  }
+
+  function toggleVoiceInput() {
+    if (listening) {
+      speechRecognition.current?.stop();
+      setListening(false);
+      return;
+    }
+
+    setVoiceMessage(null);
+    const speechWindow = window as WindowWithSpeechRecognition;
+    const SpeechRecognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setVoiceMessage("repVoiceUnsupported");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    speechRecognition.current = recognition;
+    recognition.lang = lang === "hi" ? "hi-IN" : "en-IN";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      const phrases: string[] = [];
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+        const phrase = result?.[0]?.transcript.trim();
+        if (result?.isFinal && phrase) phrases.push(phrase);
+      }
+      const spoken = phrases.join(" ");
+      if (spoken) {
+        setDescription((previous) => {
+          const existing = previous.trimEnd();
+          return existing ? `${existing} ${spoken}` : spoken;
+        });
+      }
+    };
+    recognition.onerror = (event) => {
+      if (speechRecognition.current === recognition) {
+        setVoiceMessage(
+          event.error === "not-allowed" || event.error === "service-not-allowed"
+            ? "repVoicePermission"
+            : event.error === "no-speech"
+              ? "repVoiceNoSpeech"
+              : "repVoiceError",
+        );
+        setListening(false);
+      }
+    };
+    recognition.onend = () => {
+      if (speechRecognition.current === recognition) {
+        speechRecognition.current = null;
+        setListening(false);
+      }
+    };
+
+    try {
+      recognition.start();
+      setListening(true);
+    } catch {
+      speechRecognition.current = null;
+      setVoiceMessage("repVoiceError");
+      setListening(false);
     }
   }
 
@@ -174,6 +268,19 @@ function ReportPage() {
                 placeholder={t("repDescPh")}
                 className="w-full rounded-xl border border-input bg-card p-3 text-base focus:outline-none focus:ring-2 focus:ring-ring"
               />
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant={listening ? "destructive" : "outline"}
+                  onClick={toggleVoiceInput}
+                  aria-label={t(listening ? "repVoiceStop" : "repVoiceStart")}
+                >
+                  {listening ? <MicOff aria-hidden="true" /> : <Mic aria-hidden="true" />}
+                  {t(listening ? "repVoiceStop" : "repVoiceStart")}
+                </Button>
+                {listening && <span className="text-sm text-muted-foreground" aria-live="polite">{t("repVoiceListening")}</span>}
+                {voiceMessage && <span className="text-sm text-destructive" role="status">{t(voiceMessage)}</span>}
+              </div>
               <button
                 onClick={runAi}
                 disabled={analyzing || (!file && !description.trim())}
