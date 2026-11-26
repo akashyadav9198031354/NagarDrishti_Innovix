@@ -71,6 +71,6 @@ export function useSignOut() {
       toast.error(t("authSignOutError"));
       return;
     }
-    await navigate({ to: "/login", replace: true });
+    await navigate({ to: "/", replace: true });
   }, [navigate, queryClient, t]);
 }

@@ -113,6 +113,7 @@ export const STR = {
   authNoAccess: { hi: "पहुँच नहीं है", en: "No access" },
   authNoAccessSub: { hi: "यह खाता अधिकारी के रूप में पंजीकृत नहीं है।", en: "This account is not registered as an authority." },
   authSignOut: { hi: "साइन आउट", en: "Sign out" },
+  authSignOutError: { hi: "साइन आउट नहीं हो सका। फिर से कोशिश करें।", en: "Could not sign out. Please try again." },
   authLogin: { hi: "अधिकारी लॉगिन", en: "Authority Login" },
   authLoginSub: { hi: "अधिकारी / फील्ड टीम साइन-इन", en: "Authority / field team sign-in" },
   authSignIn: { hi: "साइन इन", en: "Sign in" },
