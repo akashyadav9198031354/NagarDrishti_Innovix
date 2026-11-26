@@ -1,0 +1,3 @@
+- [ ] Add citizen email/password login and signup with a saved display name.
+- [ ] Show the signed-in name in the header and add logout without changing complaint access or authority permissions.
+- [ ] Verify citizen auth states, profile saving, and preview build.
