@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthorityRouteImport } from './routes/authority'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as TrackRouteImport } from './routes/track'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthorityRoute = AuthorityRouteImport.update({
   id: '/authority',
   path: '/authority',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportRoute = ReportRouteImport.update({
@@ -38,12 +44,14 @@ const TrackRoute = TrackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/authority': typeof AuthorityRoute
+  '/login': typeof LoginRoute
   '/report': typeof ReportRoute
   '/track': typeof TrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/authority': typeof AuthorityRoute
+  '/login': typeof LoginRoute
   '/report': typeof ReportRoute
   '/track': typeof TrackRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/authority': typeof AuthorityRoute
+  '/login': typeof LoginRoute
   '/report': typeof ReportRoute
   '/track': typeof TrackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/authority' | '/report' | '/track'
+  fullPaths: '/' | '/authority' | '/login' | '/report' | '/track'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/authority' | '/report' | '/track'
-  id: '__root__' | '/' | '/authority' | '/report' | '/track'
+  to: '/' | '/authority' | '/login' | '/report' | '/track'
+  id: '__root__' | '/' | '/authority' | '/login' | '/report' | '/track'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthorityRoute: typeof AuthorityRoute
+  LoginRoute: typeof LoginRoute
   ReportRoute: typeof ReportRoute
   TrackRoute: typeof TrackRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/authority'
       fullPath: '/authority'
       preLoaderRoute: typeof AuthorityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthorityRoute: AuthorityRoute,
+  LoginRoute: LoginRoute,
   ReportRoute: ReportRoute,
   TrackRoute: TrackRoute,
 }

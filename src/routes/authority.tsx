@@ -16,6 +16,8 @@ export const Route = createFileRoute("/authority")({
       { name: "description", content: "Civic issue map, clusters, priority-support indicators and resolution tracking for UP authorities." },
       { property: "og:title", content: "Authority Dashboard – NagarDrishti" },
       { property: "og:description", content: "Unified map of civic issues, duplicate clusters and status controls." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthorityPage,

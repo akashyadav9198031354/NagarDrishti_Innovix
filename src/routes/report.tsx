@@ -22,6 +22,8 @@ export const Route = createFileRoute("/report")({
       { name: "description", content: "Report a civic issue in Uttar Pradesh with a photo, location and short description." },
       { property: "og:title", content: "Report a civic issue – NagarDrishti" },
       { property: "og:description", content: "Photo + location + description. AI identifies the category automatically." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ReportPage,

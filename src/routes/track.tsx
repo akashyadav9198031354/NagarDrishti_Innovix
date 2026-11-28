@@ -16,6 +16,8 @@ export const Route = createFileRoute("/track")({
       { name: "description", content: "Track the status of your civic complaint using its NagarDrishti reference ID." },
       { property: "og:title", content: "Track your complaint – NagarDrishti" },
       { property: "og:description", content: "Enter your reference ID to see the status timeline and resolution evidence." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TrackPage,

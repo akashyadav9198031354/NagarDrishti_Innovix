@@ -13,6 +13,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Report waterlogging, garbage, potholes and more in Uttar Pradesh. AI-assisted civic issue intelligence and resolution tracking." },
       { property: "og:title", content: "NagarDrishti – Civic issue intelligence for UP" },
       { property: "og:description", content: "Report civic problems with a photo and location, track status, and see issue hotspots on a map." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,

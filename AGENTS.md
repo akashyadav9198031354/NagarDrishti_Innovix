@@ -12,3 +12,4 @@
 - Clustering & priority scoring run client-side in src/lib/civic.ts — transparent, configurable, no extra tables.
 - Report photos live in private bucket `report-photos`, shown via signed URLs — workspace blocks public buckets.
 - First account to sign up gets the `authority` role (trigger handle_new_user) — demo bootstrap; later users are citizens.
+- Keep shared account state in one `AuthProvider` inside `QueryClientProvider` and `LangProvider`, so the header and public pages use the same session and saved name.
